@@ -1,0 +1,69 @@
+-- 1. Fetch raw script content
+local rawUrl = "https://raw.githubusercontent.com/boniloyzin-cloud/Fovpallet_byDAVI/refs/heads/main/Fling-Things-and-People-Pallet-Script-or-Ftap-229712.txt"
+local scriptContent = game:HttpGet(rawUrl)
+
+-- 2. Execute original script
+loadstring(scriptContent)()
+
+-- 3. Modify UI elements: Rename to DAVI & attach Lock functionality
+task.spawn(function()
+    local CoreGui = game:GetService("CoreGui")
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+
+    -- Search loop to wait until UI elements load into memory
+    for i = 1, 25 do
+        task.wait(0.4)
+        local found = false
+
+        -- Scan CoreGui and PlayerGui containers
+        local searchTargets = {CoreGui, LocalPlayer:FindFirstChild("PlayerGui")}
+        
+        for _, container in ipairs(searchTargets) do
+            if container then
+                for _, gui in ipairs(container:GetChildren()) do
+                    if gui:IsA("ScreenGui") then
+                        for _, obj in ipairs(gui:GetDescendants()) do
+                            
+                            -- Locate and rename any 7S / FTAP labels or buttons to DAVI
+                            if (obj:IsA("TextButton") or obj:IsA("TextLabel")) then
+                                if string.find(obj.Text, "7S") or string.find(obj.Text, "FTAP") or string.find(obj.Text, "Pallet") then
+                                    
+                                    -- Set default title text
+                                    obj.Text = "DAVI [OFF] 🔓"
+                                    
+                                    -- Locate main outer frame for drag controls
+                                    local mainFrame = obj
+                                    while mainFrame and not mainFrame:IsA("Frame") do
+                                        mainFrame = mainFrame.Parent
+                                    end
+                                    if not mainFrame then mainFrame = obj.Parent end
+
+                                    -- Attach Lock ON / Lock OFF button click handler
+                                    if obj:IsA("TextButton") then
+                                        local isLocked = false
+                                        obj.MouseButton1Click:Connect(function()
+                                            isLocked = not isLocked
+                                            if isLocked then
+                                                obj.Text = "DAVI [ON] 🔒"
+                                                if mainFrame then mainFrame.Draggable = false end
+                                            else
+                                                obj.Text = "DAVI [OFF] 🔓"
+                                                if mainFrame then mainFrame.Draggable = true end
+                                            end
+                                        end)
+                                    end
+                                    
+                                    found = true
+                                end
+                            end
+
+                        end
+                    end
+                end
+            end
+        end
+
+        if found then break end
+    end
+end)
